@@ -4,6 +4,7 @@ import { getToken, canAccessRoute, isTokenExpired } from "@/lib/jwt";
 
 const publicRoutes = ["/login", "/register"];
 const protectedRoutes = ["/home"];
+const candidateAuthRoutes = ["/panel/start"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -12,6 +13,12 @@ export function middleware(request: NextRequest) {
   // Check if route is public
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+  const isCandidateAuthRoute = candidateAuthRoutes.some((route) => pathname.startsWith(route));
+
+  // Allow candidate auth routes (they handle their own authentication)
+  if (isCandidateAuthRoute) {
+    return NextResponse.next();
+  }
 
   // If accessing root, redirect based on auth state
   if (pathname === "/") {

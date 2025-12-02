@@ -502,3 +502,33 @@ export async function addHrUser(data: AddHrUserData): Promise<ApiResponse<AddHrU
   return handleResponse<ApiResponse<AddHrUserResponse>>(response);
 }
 
+// Candidate Authentication API Functions
+export interface CandidateLoginCredentials {
+  username: string;
+  password: string;
+  token: string; // Panel token from URL
+}
+
+export interface CandidateLoginResponse {
+  message: string;
+  status: string;
+  data: null;
+}
+
+export async function candidateLogin(
+  credentials: CandidateLoginCredentials
+): Promise<CandidateLoginResponse> {
+  const response = await fetch(`${API_URL}/api/panel/start/${credentials.token}/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      username: credentials.username,
+      password: credentials.password,
+    }),
+  });
+
+  return handleResponse<CandidateLoginResponse>(response);
+}
+
