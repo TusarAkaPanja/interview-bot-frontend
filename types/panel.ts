@@ -17,6 +17,12 @@ export interface PanelCandidate {
   token: string;
   token_expires_at: string;
   score: number;
+  status?: string;
+  session_uuid?: string;
+  started_at?: string;
+  completed_at?: string;
+  cumulative_score?: number;
+  has_report?: boolean;
 }
 
 export interface InterviewPanel {

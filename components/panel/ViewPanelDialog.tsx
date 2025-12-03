@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useInterviewPanel } from "@/lib/hooks/usePanel";
-import { Loader2, Calendar, Users, FileQuestion, X } from "lucide-react";
+import { Loader2, Calendar, Users, FileQuestion, X, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { downloadCandidateReport } from "@/lib/api";
 import type { InterviewPanel } from "@/types/panel";
 
 function formatDateTime(dateString: string): string {
@@ -30,6 +32,42 @@ interface ViewPanelDialogProps {
 
 export function ViewPanelDialog({ open, onOpenChange, panelUuid }: ViewPanelDialogProps) {
   const { data: panel, isLoading, isError } = useInterviewPanel(panelUuid || undefined);
+  const [downloadingSessionUuid, setDownloadingSessionUuid] = useState<string | null>(null);
+
+  const handleDownloadReport = async (sessionUuid: string, candidateName: string) => {
+    if (!sessionUuid) return;
+    
+    setDownloadingSessionUuid(sessionUuid);
+    try {
+      const blob = await downloadCandidateReport(sessionUuid);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `interview-report-${candidateName.replace(/\s+/g, "-")}-${sessionUuid}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Failed to download report:", error);
+      alert("Failed to download report. Please try again.");
+    } finally {
+      setDownloadingSessionUuid(null);
+    }
+  };
+
+  const getStatusColor = (status?: string) => {
+    switch (status?.toLowerCase()) {
+      case "completed":
+        return "bg-green-100 text-green-700";
+      case "in_progress":
+        return "bg-blue-100 text-blue-700";
+      case "pending":
+        return "bg-yellow-100 text-yellow-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
 
   if (isLoading) {
     return (
@@ -168,26 +206,68 @@ export function ViewPanelDialog({ open, onOpenChange, panelUuid }: ViewPanelDial
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {panel.candidates.map((candidate) => (
                   <div key={candidate.uuid} className="p-3 border rounded-lg bg-gray-50">
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="font-medium text-sm text-gray-900">
                           {candidate.candidate_name}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">{candidate.candidate_email}</div>
+                        {candidate.status && (
+                          <div className="mt-2">
+                            <span
+                              className={cn(
+                                "px-2 py-1 rounded-md text-xs font-medium",
+                                getStatusColor(candidate.status)
+                              )}
+                            >
+                              {candidate.status}
+                            </span>
+                          </div>
+                        )}
                         {candidate.score !== undefined && candidate.score !== null && (
                           <div className="text-xs text-gray-600 mt-1">
                             Score: <span className="font-medium">{candidate.score}</span>
                           </div>
                         )}
-                      </div>
-                      {candidate.token && (
-                        <div className="text-xs">
-                          <div className="text-gray-500">Token:</div>
-                          <div className="font-mono text-gray-700 break-all max-w-xs">
-                            {candidate.token}
+                        {candidate.cumulative_score !== undefined && candidate.cumulative_score !== null && (
+                          <div className="text-xs text-gray-600 mt-1">
+                            Cumulative Score: <span className="font-medium">{candidate.cumulative_score}</span>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        {candidate.session_uuid && 
+                         (candidate.has_report || 
+                          candidate.status?.toLowerCase() === "completed") && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDownloadReport(candidate.session_uuid!, candidate.candidate_name)}
+                            disabled={downloadingSessionUuid === candidate.session_uuid}
+                            className="text-xs"
+                          >
+                            {downloadingSessionUuid === candidate.session_uuid ? (
+                              <>
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                Downloading...
+                              </>
+                            ) : (
+                              <>
+                                <Download className="h-3 w-3 mr-1" />
+                                Download Report
+                              </>
+                            )}
+                          </Button>
+                        )}
+                        {candidate.token && (
+                          <div className="text-xs">
+                            <div className="text-gray-500">Token:</div>
+                            <div className="font-mono text-gray-700 break-all max-w-xs">
+                              {candidate.token}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                     {candidate.token_expires_at && (
                       <div className="text-xs text-gray-500 mt-2">
