@@ -41,6 +41,7 @@ npm install
 NEXT_PUBLIC_API_URL=http://localhost:3000
 JWT_SECRET=your-secret-key-change-in-production
 NEXT_PUBLIC_APP_NAME=Vecna
+NEXT_PUBLIC_WS_URL=http://localhost:4545
 ```
 
 3. Run the development server:
