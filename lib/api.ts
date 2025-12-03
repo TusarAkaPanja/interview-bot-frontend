@@ -394,6 +394,21 @@ export async function deleteInterviewPanel(panelUuid: string): Promise<ApiRespon
   return handleResponse<ApiResponse<void>>(response);
 }
 
+export async function downloadCandidateReport(sessionUuid: string): Promise<Blob> {
+  const token = getToken();
+  const response = await fetch(`${API_URL}/api/panel/candidate/report/${sessionUuid}/download/`, {
+    method: "GET",
+    headers: await getAuthHeaders(),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: `Request failed with status ${response.status}` }));
+    throw new Error(error.message || `Request failed with status ${response.status}`);
+  }
+  
+  return response.blob();
+}
+
 // Candidate API Functions
 export async function getAllCandidates(): Promise<ApiResponse<Candidate[]>> {
   const response = await fetch(`${API_URL}/api/auth/candidates/`, {

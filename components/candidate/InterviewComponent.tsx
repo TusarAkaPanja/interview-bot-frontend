@@ -123,7 +123,7 @@ export default function InterviewComponent({ token, wsUrl = "ws://localhost:8000
       synthRef.current.cancel();
       
       const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.rate = 1.2; // Faster speech rate for better user experience
+      utterance.rate = 1.2; 
       utterance.pitch = 1;
       utterance.volume = 1;
       
@@ -497,34 +497,6 @@ export default function InterviewComponent({ token, wsUrl = "ws://localhost:8000
             </div>
             <h2 className="text-3xl font-bold text-gray-800 mb-2">Interview Completed!</h2>
             <p className="text-gray-600">Thank you for participating in the interview.</p>
-          </div>
-
-          <div className="bg-gray-50 rounded-lg p-6 mb-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Interview Feedback</h3>
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-semibold text-gray-700 mb-2">Overall Performance</h4>
-                <p className="text-gray-600">
-                  You demonstrated good understanding of the core concepts. Your responses showed 
-                  practical knowledge and clear communication skills.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-700 mb-2">Strengths</h4>
-                <ul className="list-disc list-inside text-gray-600 space-y-1">
-                  <li>Clear articulation of technical concepts</li>
-                  <li>Good problem-solving approach</li>
-                  <li>Effective communication style</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-700 mb-2">Areas for Improvement</h4>
-                <ul className="list-disc list-inside text-gray-600 space-y-1">
-                  <li>Consider providing more detailed examples</li>
-                  <li>Practice explaining complex topics in simpler terms</li>
-                </ul>
-              </div>
-            </div>
           </div>
 
           <div className="text-center">
